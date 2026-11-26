@@ -1,0 +1,34 @@
+1. CAPTURE_COUNT — Capture X Pieces
+Uses target: Yes (e.g. target = 2).
+Win: Player captures at least target Robot pieces (capturesByPlayer >= target) within moveLimit player moves.
+Lose: Player runs out of moveLimit, loses all pieces (playerPieces == 0), or has no legal moves before reaching target.
+
+2. WIN_IN_X_MOVES — Win in X Moves
+Uses target: No (uses moveLimit).
+Win: Player wins the game within moveLimit moves — either all Robot pieces are captured (robotPieces == 0) OR the Robot has no legal moves on its turn.
+Lose: Player runs out of moveLimit without winning, loses all pieces, or has no legal moves.
+
+3. MAKE_KINGS — Make X Kings
+Uses target: Yes (e.g. target = 1).
+Win: Player promotes at least target normal pieces to Kings (kingsMadeByPlayer >= target) within moveLimit moves.
+Lose: Player runs out of moveLimit, loses all pieces, or has no legal moves before promoting target kings.
+
+4. CAPTURE_ALL_OPPONENTS — Capture All Opponents
+Uses target: No (always 0 remaining).
+Win: Every Robot piece on the board is captured (robotPieces == 0) within moveLimit moves.
+Lose: Player runs out of moveLimit with Robot pieces still remaining, loses all pieces, or has no legal moves.
+
+5. WIN_NO_LOSS — Win Without Losing Pieces
+Uses target: No.
+Win: Player wins (robotPieces == 0 or Robot has no legal moves) within moveLimit moves with 0 player pieces captured (playerPiecesLost == 0).
+Lose: Immediately if any player piece is captured (playerPiecesLost > 0), or if moveLimit expires / player has no legal moves.
+
+6. CAPTURE_KING — Capture Opponent King
+Uses target: Yes (e.g. target = 1).
+Win: Player captures at least target Robot King pieces (kingsCapturedByPlayer >= target) within moveLimit moves. (Capturing normal Robot men does not count toward target.)
+Lose: Player runs out of moveLimit, loses all pieces, or has no legal moves before capturing target Robot kings.
+
+7. SURVIVE_MOVES — Survive X Moves
+Uses target: Yes (number of player moves to survive; falls back to moveLimit if 0).
+Win: Player completes target moves (playerMovesUsed >= target) while still having at least 1 piece alive (playerPieces > 0).
+Lose: All player pieces are captured (playerPieces == 0) or player has no legal moves before reaching target moves.
