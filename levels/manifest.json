@@ -1,4 +1,8 @@
 {
-  "version": 1,
-  "levels": []
+  "version": 2,
+  "levels": [
+    {
+      "path": "BEGINNER/1.json"
+    }
+  ]
 }
