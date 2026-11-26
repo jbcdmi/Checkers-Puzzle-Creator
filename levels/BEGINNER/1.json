@@ -3,10 +3,35 @@
   "difficulty": "BEGINNER",
   "boardSize": 10,
   "firstTurn": 0,
-  "board": [],
+  "board": [
+    {
+      "pIndex": 0,
+      "isKing": false,
+      "pos": [
+        1,
+        6
+      ]
+    },
+    {
+      "pIndex": 1,
+      "isKing": false,
+      "pos": [
+        2,
+        5
+      ]
+    },
+    {
+      "pIndex": 1,
+      "isKing": false,
+      "pos": [
+        4,
+        3
+      ]
+    }
+  ],
   "challenge": {
     "type": "CAPTURE_COUNT",
-    "target": 1,
+    "target": 2,
     "moveLimit": 2
   }
 }
