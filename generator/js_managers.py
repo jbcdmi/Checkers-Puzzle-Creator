@@ -450,4 +450,175 @@ class ImportExportManager {
     }
   }
 }
+
+class GitHubSyncManager {
+  static get CONFIG_KEY() { return "CHECKERS_GITHUB_CONFIG_V1"; }
+
+  static getConfig() {
+    const defaults = {
+      owner: "jbcdmi",
+      repo: "Checkers-Puzzle-Creator",
+      branch: "main",
+      basePath: "levels",
+      token: ""
+    };
+    try {
+      const raw = localStorage.getItem(this.CONFIG_KEY);
+      if (raw) {
+        return { ...defaults, ...JSON.parse(raw) };
+      }
+    } catch (e) {
+      // ignore
+    }
+    return defaults;
+  }
+
+  static saveConfig(cfg) {
+    try {
+      localStorage.setItem(this.CONFIG_KEY, JSON.stringify(cfg));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  static encodeBase64Utf8(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  static decodeBase64Utf8(b64) {
+    return decodeURIComponent(escape(atob((b64 || "").replace(/\s/g, ""))));
+  }
+
+  static buildHeaders(token, hasBody = false) {
+    const headers = { "Accept": "application/vnd.github+json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    if (hasBody) headers["Content-Type"] = "application/json";
+    return headers;
+  }
+
+  static async fetchFileContent(cfg, repoPath) {
+    const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${repoPath}?ref=${cfg.branch}&t=${Date.now()}`;
+    const res = await fetch(url, { headers: this.buildHeaders(cfg.token) });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      throw new Error(`GitHub read failed (${res.status}) for ${repoPath}`);
+    }
+    const data = await res.json();
+    return {
+      sha: data.sha,
+      text: this.decodeBase64Utf8(data.content || "")
+    };
+  }
+
+  static async putFileContent(cfg, repoPath, text, message, sha = null) {
+    if (!cfg.token) {
+      throw new Error("GitHub Personal Access Token is required to save online.");
+    }
+    const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${repoPath}`;
+    let currentSha = sha;
+    if (!currentSha) {
+      const existing = await this.fetchFileContent(cfg, repoPath).catch(() => null);
+      if (existing) currentSha = existing.sha;
+    }
+
+    const body = {
+      message,
+      content: this.encodeBase64Utf8(text),
+      branch: cfg.branch
+    };
+    if (currentSha) body.sha = currentSha;
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: this.buildHeaders(cfg.token, true),
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.message || `GitHub write failed (${res.status})`);
+    }
+    const result = await res.json();
+    return result.content ? result.content.sha : null;
+  }
+
+  static async loadOnlineLevels(cfg = this.getConfig()) {
+    const manifestPath = `${cfg.basePath}/manifest.json`;
+    let manifestFile = await this.fetchFileContent(cfg, manifestPath);
+    let manifest = { version: 1, levels: [] };
+    if (manifestFile && manifestFile.text) {
+      manifest = JSON.parse(manifestFile.text);
+    }
+
+    const entries = [];
+    const list = Array.isArray(manifest.levels) ? manifest.levels : [];
+    for (const item of list) {
+      const relPath = (item.path || "").replace(/^\/+/, "");
+      if (!relPath) continue;
+      try {
+        const f = await this.fetchFileContent(cfg, `${cfg.basePath}/${relPath}`);
+        if (!f) continue;
+        const parsed = ImportExportManager.parseImportJSON(f.text);
+        if (parsed.success && parsed.levels.length > 0) {
+          entries.push({
+            fileName: relPath,
+            relPath,
+            level: parsed.levels[0],
+            sha: f.sha,
+            source: "github"
+          });
+        }
+      } catch (e) {
+        console.warn("Skipped online level:", relPath, e);
+      }
+    }
+
+    return {
+      version: manifest.version || 1,
+      manifestSha: manifestFile ? manifestFile.sha : null,
+      levels: entries
+    };
+  }
+
+  static async saveOnlineLevel(cfg, relPath, level, sha = null, allRelPaths = []) {
+    const cleanRel = relPath.replace(/^\/+/, "");
+    const levelJson = ImportExportManager.getCleanJSONString(level);
+    const newSha = await this.putFileContent(
+      cfg,
+      `${cfg.basePath}/${cleanRel}`,
+      levelJson,
+      `Update puzzle level ${cleanRel}`,
+      sha
+    );
+
+    // Update manifest.json and bump version so Android app syncs automatically
+    const manifestPath = `${cfg.basePath}/manifest.json`;
+    const manifestFile = await this.fetchFileContent(cfg, manifestPath);
+    let manifest = { version: 0, levels: [] };
+    if (manifestFile && manifestFile.text) {
+      manifest = JSON.parse(manifestFile.text);
+    }
+    const pathSet = new Set((manifest.levels || []).map(x => x.path));
+    allRelPaths.forEach(p => { if (p) pathSet.add(p); });
+    pathSet.add(cleanRel);
+
+    const sortedPaths = Array.from(pathSet).sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+    );
+
+    const nextManifest = {
+      version: (manifest.version || 0) + 1,
+      levels: sortedPaths.map(p => ({ path: p }))
+    };
+
+    await this.putFileContent(
+      cfg,
+      manifestPath,
+      JSON.stringify(nextManifest, null, 2) + "\n",
+      `Bump levels manifest to v${nextManifest.version}`,
+      manifestFile ? manifestFile.sha : null
+    );
+
+    return { newSha, manifestVersion: nextManifest.version };
+  }
+}
 '''

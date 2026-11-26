@@ -1062,9 +1062,19 @@ body {
         </div>
 
         <div style="display:flex; gap:6px;">
-          <button class="btn btn-primary" id="btnSelectFolder" style="flex:1; justify-content:center;">
+          <button class="btn btn-primary" id="btnGitHubSync" style="flex:1; justify-content:center;" title="Load levels from GitHub">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+            Sync GitHub
+          </button>
+          <button class="btn btn-icon" id="btnGitHubSettings" title="GitHub Repo & Token Settings">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          </button>
+        </div>
+
+        <div style="display:flex; gap:6px;">
+          <button class="btn" id="btnSelectFolder" style="flex:1; justify-content:center;">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
-            Select Folder
+            Local Folder
           </button>
           <button class="btn" id="btnNewFileSidebar" title="Create New Level File">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z"/></svg>
@@ -1407,6 +1417,54 @@ body {
         <button class="btn" id="btnCancelNewLevel">Cancel</button>
         <button class="btn btn-primary" id="btnCreateLevelOnly">Create Level</button>
         <button class="btn btn-success" id="btnCreateAndDownload">Create &amp; Download .json</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GITHUB SYNC SETTINGS MODAL -->
+  <div class="modal-overlay" id="githubModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12c0-5.52-4.48-10-10-10z"/></svg>
+          GitHub Online Sync Settings
+        </div>
+        <button class="btn btn-icon btn-sm" id="closeGithubModal">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">GitHub Owner</label>
+            <input type="text" class="form-input" id="ghOwnerInput" value="jbcdmi" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Repository</label>
+            <input type="text" class="form-input" id="ghRepoInput" value="Checkers-Puzzle-Creator" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Branch</label>
+            <input type="text" class="form-input" id="ghBranchInput" value="main" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Levels Folder</label>
+            <input type="text" class="form-input" id="ghBasePathInput" value="levels" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Personal Access Token (Required to Save / Create Online)</label>
+          <input type="password" class="form-input" id="ghTokenInput" placeholder="github_pat_... or ghp_..." />
+        </div>
+        <div class="folder-path-pill" style="white-space:normal; line-height:1.4;">
+          Token is stored only in your browser's localStorage. Create a Fine-Grained Token on GitHub with <b>Contents: Read &amp; Write</b> access for this repository.
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn" id="btnCancelGithub">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveGitHubConfig">Save &amp; Sync</button>
       </div>
     </div>
   </div>
@@ -2330,6 +2388,177 @@ class ImportExportManager {
   }
 }
 
+class GitHubSyncManager {
+  static get CONFIG_KEY() { return "CHECKERS_GITHUB_CONFIG_V1"; }
+
+  static getConfig() {
+    const defaults = {
+      owner: "jbcdmi",
+      repo: "Checkers-Puzzle-Creator",
+      branch: "main",
+      basePath: "levels",
+      token: ""
+    };
+    try {
+      const raw = localStorage.getItem(this.CONFIG_KEY);
+      if (raw) {
+        return { ...defaults, ...JSON.parse(raw) };
+      }
+    } catch (e) {
+      // ignore
+    }
+    return defaults;
+  }
+
+  static saveConfig(cfg) {
+    try {
+      localStorage.setItem(this.CONFIG_KEY, JSON.stringify(cfg));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  static encodeBase64Utf8(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+
+  static decodeBase64Utf8(b64) {
+    return decodeURIComponent(escape(atob((b64 || "").replace(/\s/g, ""))));
+  }
+
+  static buildHeaders(token, hasBody = false) {
+    const headers = { "Accept": "application/vnd.github+json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    if (hasBody) headers["Content-Type"] = "application/json";
+    return headers;
+  }
+
+  static async fetchFileContent(cfg, repoPath) {
+    const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${repoPath}?ref=${cfg.branch}&t=${Date.now()}`;
+    const res = await fetch(url, { headers: this.buildHeaders(cfg.token) });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      throw new Error(`GitHub read failed (${res.status}) for ${repoPath}`);
+    }
+    const data = await res.json();
+    return {
+      sha: data.sha,
+      text: this.decodeBase64Utf8(data.content || "")
+    };
+  }
+
+  static async putFileContent(cfg, repoPath, text, message, sha = null) {
+    if (!cfg.token) {
+      throw new Error("GitHub Personal Access Token is required to save online.");
+    }
+    const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${repoPath}`;
+    let currentSha = sha;
+    if (!currentSha) {
+      const existing = await this.fetchFileContent(cfg, repoPath).catch(() => null);
+      if (existing) currentSha = existing.sha;
+    }
+
+    const body = {
+      message,
+      content: this.encodeBase64Utf8(text),
+      branch: cfg.branch
+    };
+    if (currentSha) body.sha = currentSha;
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: this.buildHeaders(cfg.token, true),
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.message || `GitHub write failed (${res.status})`);
+    }
+    const result = await res.json();
+    return result.content ? result.content.sha : null;
+  }
+
+  static async loadOnlineLevels(cfg = this.getConfig()) {
+    const manifestPath = `${cfg.basePath}/manifest.json`;
+    let manifestFile = await this.fetchFileContent(cfg, manifestPath);
+    let manifest = { version: 1, levels: [] };
+    if (manifestFile && manifestFile.text) {
+      manifest = JSON.parse(manifestFile.text);
+    }
+
+    const entries = [];
+    const list = Array.isArray(manifest.levels) ? manifest.levels : [];
+    for (const item of list) {
+      const relPath = (item.path || "").replace(/^\/+/, "");
+      if (!relPath) continue;
+      try {
+        const f = await this.fetchFileContent(cfg, `${cfg.basePath}/${relPath}`);
+        if (!f) continue;
+        const parsed = ImportExportManager.parseImportJSON(f.text);
+        if (parsed.success && parsed.levels.length > 0) {
+          entries.push({
+            fileName: relPath,
+            relPath,
+            level: parsed.levels[0],
+            sha: f.sha,
+            source: "github"
+          });
+        }
+      } catch (e) {
+        console.warn("Skipped online level:", relPath, e);
+      }
+    }
+
+    return {
+      version: manifest.version || 1,
+      manifestSha: manifestFile ? manifestFile.sha : null,
+      levels: entries
+    };
+  }
+
+  static async saveOnlineLevel(cfg, relPath, level, sha = null, allRelPaths = []) {
+    const cleanRel = relPath.replace(/^\/+/, "");
+    const levelJson = ImportExportManager.getCleanJSONString(level);
+    const newSha = await this.putFileContent(
+      cfg,
+      `${cfg.basePath}/${cleanRel}`,
+      levelJson,
+      `Update puzzle level ${cleanRel}`,
+      sha
+    );
+
+    // Update manifest.json and bump version so Android app syncs automatically
+    const manifestPath = `${cfg.basePath}/manifest.json`;
+    const manifestFile = await this.fetchFileContent(cfg, manifestPath);
+    let manifest = { version: 0, levels: [] };
+    if (manifestFile && manifestFile.text) {
+      manifest = JSON.parse(manifestFile.text);
+    }
+    const pathSet = new Set((manifest.levels || []).map(x => x.path));
+    allRelPaths.forEach(p => { if (p) pathSet.add(p); });
+    pathSet.add(cleanRel);
+
+    const sortedPaths = Array.from(pathSet).sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+    );
+
+    const nextManifest = {
+      version: (manifest.version || 0) + 1,
+      levels: sortedPaths.map(p => ({ path: p }))
+    };
+
+    await this.putFileContent(
+      cfg,
+      manifestPath,
+      JSON.stringify(nextManifest, null, 2) + "\n",
+      `Bump levels manifest to v${nextManifest.version}`,
+      manifestFile ? manifestFile.sha : null
+    );
+
+    return { newSha, manifestVersion: nextManifest.version };
+  }
+}
+
 
 
 /**
@@ -2342,10 +2571,11 @@ class UIManager {
     this.currentLevel = this.storage.level;
     this.history = new HistoryManager(40);
 
-    // Folder browser state
+    // Folder / Online browser state
+    this.isOnlineMode = false;
     this.directoryHandle = null;
     this.folderName = "";
-    this.folderFiles = []; // [{ fileName, level, fileHandle }]
+    this.folderFiles = []; // [{ fileName, relPath, level, fileHandle, sha, source }]
     this.activeFileIndex = -1;
     this.folderSearchQuery = "";
 
@@ -2376,6 +2606,10 @@ class UIManager {
     this.loadLevelIntoEditor(this.getActiveLevel());
     this.updateStatus();
     this.showToast("Simple Level Creator Ready", "info");
+
+    if (window.location && window.location.protocol && window.location.protocol.startsWith("http")) {
+      this.syncFromGitHub(true);
+    }
   }
 
   requestAutoSave() {
@@ -2397,7 +2631,28 @@ class UIManager {
       const entry = this.folderFiles[this.activeFileIndex];
       entry.level = StorageManager.cleanInternalLevel(this.currentLevel);
       this.renderFolderList();
-      if (entry.fileHandle && typeof entry.fileHandle.createWritable === "function") {
+      if (entry.source === "github") {
+        const cfg = GitHubSyncManager.getConfig();
+        if (!cfg.token) {
+          this.openGitHubModal();
+          this.showToast("Enter your GitHub Token to save online", "warning");
+          return;
+        }
+        try {
+          const allRelPaths = this.folderFiles.map(f => f.relPath || f.fileName);
+          const res = await GitHubSyncManager.saveOnlineLevel(
+            cfg,
+            entry.relPath || entry.fileName,
+            this.currentLevel,
+            entry.sha,
+            allRelPaths
+          );
+          entry.sha = res.newSha;
+          this.showToast(`Published ${entry.fileName} to GitHub (v${res.manifestVersion})`, "success");
+        } catch (err) {
+          this.showToast(`GitHub save failed: ${err.message}`, "error");
+        }
+      } else if (entry.fileHandle && typeof entry.fileHandle.createWritable === "function") {
         try {
           const writable = await entry.fileHandle.createWritable();
           await writable.write(ImportExportManager.getCleanJSONString(this.currentLevel));
@@ -2415,6 +2670,62 @@ class UIManager {
       const now = new Date();
       statusText.textContent = `Saved at ${now.toLocaleTimeString()}`;
     }
+  }
+
+  async syncFromGitHub(silent = false) {
+    const cfg = GitHubSyncManager.getConfig();
+    try {
+      const res = await GitHubSyncManager.loadOnlineLevels(cfg);
+      this.isOnlineMode = true;
+      this.directoryHandle = null;
+      this.folderName = `Online: ${cfg.owner}/${cfg.repo}`;
+      this.folderFiles = res.levels;
+      this.activeFileIndex = -1;
+      this.updateFolderHeader();
+      this.renderFolderList();
+
+      if (this.folderFiles.length > 0) {
+        this.openFolderFile(0);
+      }
+      if (!silent) {
+        this.showToast(`Synced ${this.folderFiles.length} level(s) from GitHub`, "success");
+      }
+    } catch (err) {
+      if (!silent) {
+        this.showToast(`GitHub sync error: ${err.message}`, "error");
+      }
+    }
+  }
+
+  openGitHubModal() {
+    const modal = document.getElementById("githubModal");
+    if (!modal) return;
+    const cfg = GitHubSyncManager.getConfig();
+    const ownerEl = document.getElementById("ghOwnerInput");
+    const repoEl = document.getElementById("ghRepoInput");
+    const branchEl = document.getElementById("ghBranchInput");
+    const pathEl = document.getElementById("ghBasePathInput");
+    const tokenEl = document.getElementById("ghTokenInput");
+
+    if (ownerEl) ownerEl.value = cfg.owner || "jbcdmi";
+    if (repoEl) repoEl.value = cfg.repo || "Checkers-Puzzle-Creator";
+    if (branchEl) branchEl.value = cfg.branch || "main";
+    if (pathEl) pathEl.value = cfg.basePath || "levels";
+    if (tokenEl) tokenEl.value = cfg.token || "";
+    modal.classList.add("active");
+  }
+
+  saveGitHubConfig() {
+    const cfg = {
+      owner: (document.getElementById("ghOwnerInput").value || "jbcdmi").trim(),
+      repo: (document.getElementById("ghRepoInput").value || "Checkers-Puzzle-Creator").trim(),
+      branch: (document.getElementById("ghBranchInput").value || "main").trim(),
+      basePath: (document.getElementById("ghBasePathInput").value || "levels").trim().replace(/^\/+|\/+$/g, ""),
+      token: (document.getElementById("ghTokenInput").value || "").trim()
+    };
+    GitHubSyncManager.saveConfig(cfg);
+    document.getElementById("githubModal").classList.remove("active");
+    this.syncFromGitHub(false);
   }
 
   /**
@@ -2467,6 +2778,9 @@ class UIManager {
     if (this.directoryHandle) {
       if (hintEl) hintEl.textContent = `Writable folder "${this.folderName}" is connected. Creating will write a new .json file directly into this folder.`;
       if (createBtn) createBtn.textContent = "Create File in Folder";
+    } else if (this.isOnlineMode) {
+      if (hintEl) hintEl.textContent = `Online mode (${this.folderName}): Creating will commit "<Difficulty>/${nextId}.json" and update manifest.json on GitHub.`;
+      if (createBtn) createBtn.textContent = "Create & Publish to GitHub";
     } else {
       if (hintEl) hintEl.textContent = `Creates a new level in the editor. Use "Create & Download .json" to save it as a new file.`;
       if (createBtn) createBtn.textContent = "Create in Editor";
@@ -2508,6 +2822,7 @@ class UIManager {
     this.legalMovesForSelected = [];
 
     let createdInFolder = false;
+    let createdOnline = false;
     if (this.directoryHandle && typeof this.directoryHandle.getFileHandle === "function") {
       try {
         const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
@@ -2528,6 +2843,31 @@ class UIManager {
         createdInFolder = true;
       } catch (err) {
         console.warn("Could not create file in folder:", err);
+      }
+    } else if (this.isOnlineMode && !downloadFile) {
+      const cfg = GitHubSyncManager.getConfig();
+      if (!cfg.token) {
+        this.openGitHubModal();
+        this.showToast("Enter your GitHub Token to create files online", "warning");
+        return;
+      }
+      const relPath = `${difficulty}/${fileName}`;
+      try {
+        const allRelPaths = this.folderFiles.map(f => f.relPath || f.fileName);
+        const res = await GitHubSyncManager.saveOnlineLevel(cfg, relPath, newLevel, null, allRelPaths);
+        const existingIdx = this.folderFiles.findIndex(f => (f.relPath || f.fileName) === relPath);
+        const entry = { fileName: relPath, relPath, level: StorageManager.cleanInternalLevel(newLevel), sha: res.newSha, source: "github" };
+        if (existingIdx !== -1) {
+          this.folderFiles[existingIdx] = entry;
+          this.activeFileIndex = existingIdx;
+        } else {
+          this.folderFiles.push(entry);
+          this.folderFiles.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: "base" }));
+          this.activeFileIndex = this.folderFiles.findIndex(f => (f.relPath || f.fileName) === relPath);
+        }
+        createdOnline = true;
+      } catch (err) {
+        this.showToast(`GitHub create failed: ${err.message}`, "error");
       }
     } else if (this.folderFiles.length > 0) {
       // Also reflect the new file entry in the open folder list in memory
@@ -2556,7 +2896,9 @@ class UIManager {
     const modal = document.getElementById("newLevelModal");
     if (modal) modal.classList.remove("active");
 
-    if (createdInFolder) {
+    if (createdOnline) {
+      this.showToast(`Created ${difficulty}/${fileName} on GitHub`, "success");
+    } else if (createdInFolder) {
       this.showToast(`Created ${fileName} in "${this.folderName}"`, "success");
     } else if (downloadFile) {
       this.showToast(`Created & downloaded ${fileName}`, "success");
@@ -3634,6 +3976,24 @@ class UIManager {
       ImportExportManager.exportLevel(this.getActiveLevel());
       this.showToast(`Exported ${this.getActiveLevel().levelId}.json`, "success");
     });
+
+    // GitHub sync controls
+    const btnGhSync = document.getElementById("btnGitHubSync");
+    if (btnGhSync) btnGhSync.addEventListener("click", () => this.syncFromGitHub(false));
+
+    const btnGhSettings = document.getElementById("btnGitHubSettings");
+    if (btnGhSettings) btnGhSettings.addEventListener("click", () => this.openGitHubModal());
+
+    const closeGhModal = () => {
+      const m = document.getElementById("githubModal");
+      if (m) m.classList.remove("active");
+    };
+    const btnCloseGh = document.getElementById("closeGithubModal");
+    if (btnCloseGh) btnCloseGh.addEventListener("click", closeGhModal);
+    const btnCancelGh = document.getElementById("btnCancelGithub");
+    if (btnCancelGh) btnCancelGh.addEventListener("click", closeGhModal);
+    const btnSaveGh = document.getElementById("btnSaveGitHubConfig");
+    if (btnSaveGh) btnSaveGh.addEventListener("click", () => this.saveGitHubConfig());
 
     // Folder browser controls
     const btnSelectFolder = document.getElementById("btnSelectFolder");

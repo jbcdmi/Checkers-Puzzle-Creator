@@ -11,10 +11,11 @@ class UIManager {
     this.currentLevel = this.storage.level;
     this.history = new HistoryManager(40);
 
-    // Folder browser state
+    // Folder / Online browser state
+    this.isOnlineMode = false;
     this.directoryHandle = null;
     this.folderName = "";
-    this.folderFiles = []; // [{ fileName, level, fileHandle }]
+    this.folderFiles = []; // [{ fileName, relPath, level, fileHandle, sha, source }]
     this.activeFileIndex = -1;
     this.folderSearchQuery = "";
 
@@ -45,6 +46,10 @@ class UIManager {
     this.loadLevelIntoEditor(this.getActiveLevel());
     this.updateStatus();
     this.showToast("Simple Level Creator Ready", "info");
+
+    if (window.location && window.location.protocol && window.location.protocol.startsWith("http")) {
+      this.syncFromGitHub(true);
+    }
   }
 
   requestAutoSave() {
@@ -66,7 +71,28 @@ class UIManager {
       const entry = this.folderFiles[this.activeFileIndex];
       entry.level = StorageManager.cleanInternalLevel(this.currentLevel);
       this.renderFolderList();
-      if (entry.fileHandle && typeof entry.fileHandle.createWritable === "function") {
+      if (entry.source === "github") {
+        const cfg = GitHubSyncManager.getConfig();
+        if (!cfg.token) {
+          this.openGitHubModal();
+          this.showToast("Enter your GitHub Token to save online", "warning");
+          return;
+        }
+        try {
+          const allRelPaths = this.folderFiles.map(f => f.relPath || f.fileName);
+          const res = await GitHubSyncManager.saveOnlineLevel(
+            cfg,
+            entry.relPath || entry.fileName,
+            this.currentLevel,
+            entry.sha,
+            allRelPaths
+          );
+          entry.sha = res.newSha;
+          this.showToast(`Published ${entry.fileName} to GitHub (v${res.manifestVersion})`, "success");
+        } catch (err) {
+          this.showToast(`GitHub save failed: ${err.message}`, "error");
+        }
+      } else if (entry.fileHandle && typeof entry.fileHandle.createWritable === "function") {
         try {
           const writable = await entry.fileHandle.createWritable();
           await writable.write(ImportExportManager.getCleanJSONString(this.currentLevel));
@@ -84,6 +110,62 @@ class UIManager {
       const now = new Date();
       statusText.textContent = `Saved at ${now.toLocaleTimeString()}`;
     }
+  }
+
+  async syncFromGitHub(silent = false) {
+    const cfg = GitHubSyncManager.getConfig();
+    try {
+      const res = await GitHubSyncManager.loadOnlineLevels(cfg);
+      this.isOnlineMode = true;
+      this.directoryHandle = null;
+      this.folderName = `Online: ${cfg.owner}/${cfg.repo}`;
+      this.folderFiles = res.levels;
+      this.activeFileIndex = -1;
+      this.updateFolderHeader();
+      this.renderFolderList();
+
+      if (this.folderFiles.length > 0) {
+        this.openFolderFile(0);
+      }
+      if (!silent) {
+        this.showToast(`Synced ${this.folderFiles.length} level(s) from GitHub`, "success");
+      }
+    } catch (err) {
+      if (!silent) {
+        this.showToast(`GitHub sync error: ${err.message}`, "error");
+      }
+    }
+  }
+
+  openGitHubModal() {
+    const modal = document.getElementById("githubModal");
+    if (!modal) return;
+    const cfg = GitHubSyncManager.getConfig();
+    const ownerEl = document.getElementById("ghOwnerInput");
+    const repoEl = document.getElementById("ghRepoInput");
+    const branchEl = document.getElementById("ghBranchInput");
+    const pathEl = document.getElementById("ghBasePathInput");
+    const tokenEl = document.getElementById("ghTokenInput");
+
+    if (ownerEl) ownerEl.value = cfg.owner || "jbcdmi";
+    if (repoEl) repoEl.value = cfg.repo || "Checkers-Puzzle-Creator";
+    if (branchEl) branchEl.value = cfg.branch || "main";
+    if (pathEl) pathEl.value = cfg.basePath || "levels";
+    if (tokenEl) tokenEl.value = cfg.token || "";
+    modal.classList.add("active");
+  }
+
+  saveGitHubConfig() {
+    const cfg = {
+      owner: (document.getElementById("ghOwnerInput").value || "jbcdmi").trim(),
+      repo: (document.getElementById("ghRepoInput").value || "Checkers-Puzzle-Creator").trim(),
+      branch: (document.getElementById("ghBranchInput").value || "main").trim(),
+      basePath: (document.getElementById("ghBasePathInput").value || "levels").trim().replace(/^\/+|\/+$/g, ""),
+      token: (document.getElementById("ghTokenInput").value || "").trim()
+    };
+    GitHubSyncManager.saveConfig(cfg);
+    document.getElementById("githubModal").classList.remove("active");
+    this.syncFromGitHub(false);
   }
 
   /**
@@ -136,6 +218,9 @@ class UIManager {
     if (this.directoryHandle) {
       if (hintEl) hintEl.textContent = `Writable folder "${this.folderName}" is connected. Creating will write a new .json file directly into this folder.`;
       if (createBtn) createBtn.textContent = "Create File in Folder";
+    } else if (this.isOnlineMode) {
+      if (hintEl) hintEl.textContent = `Online mode (${this.folderName}): Creating will commit "<Difficulty>/${nextId}.json" and update manifest.json on GitHub.`;
+      if (createBtn) createBtn.textContent = "Create & Publish to GitHub";
     } else {
       if (hintEl) hintEl.textContent = `Creates a new level in the editor. Use "Create & Download .json" to save it as a new file.`;
       if (createBtn) createBtn.textContent = "Create in Editor";
@@ -177,6 +262,7 @@ class UIManager {
     this.legalMovesForSelected = [];
 
     let createdInFolder = false;
+    let createdOnline = false;
     if (this.directoryHandle && typeof this.directoryHandle.getFileHandle === "function") {
       try {
         const fileHandle = await this.directoryHandle.getFileHandle(fileName, { create: true });
@@ -197,6 +283,31 @@ class UIManager {
         createdInFolder = true;
       } catch (err) {
         console.warn("Could not create file in folder:", err);
+      }
+    } else if (this.isOnlineMode && !downloadFile) {
+      const cfg = GitHubSyncManager.getConfig();
+      if (!cfg.token) {
+        this.openGitHubModal();
+        this.showToast("Enter your GitHub Token to create files online", "warning");
+        return;
+      }
+      const relPath = `${difficulty}/${fileName}`;
+      try {
+        const allRelPaths = this.folderFiles.map(f => f.relPath || f.fileName);
+        const res = await GitHubSyncManager.saveOnlineLevel(cfg, relPath, newLevel, null, allRelPaths);
+        const existingIdx = this.folderFiles.findIndex(f => (f.relPath || f.fileName) === relPath);
+        const entry = { fileName: relPath, relPath, level: StorageManager.cleanInternalLevel(newLevel), sha: res.newSha, source: "github" };
+        if (existingIdx !== -1) {
+          this.folderFiles[existingIdx] = entry;
+          this.activeFileIndex = existingIdx;
+        } else {
+          this.folderFiles.push(entry);
+          this.folderFiles.sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { numeric: true, sensitivity: "base" }));
+          this.activeFileIndex = this.folderFiles.findIndex(f => (f.relPath || f.fileName) === relPath);
+        }
+        createdOnline = true;
+      } catch (err) {
+        this.showToast(`GitHub create failed: ${err.message}`, "error");
       }
     } else if (this.folderFiles.length > 0) {
       // Also reflect the new file entry in the open folder list in memory
@@ -225,7 +336,9 @@ class UIManager {
     const modal = document.getElementById("newLevelModal");
     if (modal) modal.classList.remove("active");
 
-    if (createdInFolder) {
+    if (createdOnline) {
+      this.showToast(`Created ${difficulty}/${fileName} on GitHub`, "success");
+    } else if (createdInFolder) {
       this.showToast(`Created ${fileName} in "${this.folderName}"`, "success");
     } else if (downloadFile) {
       this.showToast(`Created & downloaded ${fileName}`, "success");
@@ -1303,6 +1416,24 @@ class UIManager {
       ImportExportManager.exportLevel(this.getActiveLevel());
       this.showToast(`Exported ${this.getActiveLevel().levelId}.json`, "success");
     });
+
+    // GitHub sync controls
+    const btnGhSync = document.getElementById("btnGitHubSync");
+    if (btnGhSync) btnGhSync.addEventListener("click", () => this.syncFromGitHub(false));
+
+    const btnGhSettings = document.getElementById("btnGitHubSettings");
+    if (btnGhSettings) btnGhSettings.addEventListener("click", () => this.openGitHubModal());
+
+    const closeGhModal = () => {
+      const m = document.getElementById("githubModal");
+      if (m) m.classList.remove("active");
+    };
+    const btnCloseGh = document.getElementById("closeGithubModal");
+    if (btnCloseGh) btnCloseGh.addEventListener("click", closeGhModal);
+    const btnCancelGh = document.getElementById("btnCancelGithub");
+    if (btnCancelGh) btnCancelGh.addEventListener("click", closeGhModal);
+    const btnSaveGh = document.getElementById("btnSaveGitHubConfig");
+    if (btnSaveGh) btnSaveGh.addEventListener("click", () => this.saveGitHubConfig());
 
     // Folder browser controls
     const btnSelectFolder = document.getElementById("btnSelectFolder");
