@@ -27,6 +27,22 @@
         4,
         3
       ]
+    },
+    {
+      "pIndex": 1,
+      "isKing": false,
+      "pos": [
+        3,
+        0
+      ]
+    },
+    {
+      "pIndex": 1,
+      "isKing": false,
+      "pos": [
+        2,
+        1
+      ]
     }
   ],
   "challenge": {
