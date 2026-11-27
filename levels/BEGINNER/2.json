@@ -1,0 +1,12 @@
+{
+  "levelId": "2",
+  "difficulty": "BEGINNER",
+  "boardSize": 10,
+  "firstTurn": 0,
+  "board": [],
+  "challenge": {
+    "type": "CAPTURE_COUNT",
+    "target": 1,
+    "moveLimit": 2
+  }
+}
